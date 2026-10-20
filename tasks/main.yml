@@ -1,13 +1,13 @@
 ---
 - name: Ensure required sonarr depencerys are present.
-  apt:
+  ansible.builtin.apt:
     name:
       - sqlite3
       - libicu-dev
     state: present
 
 - name: Create sonarr system user.
-  user:
+  ansible.builtin.user:
     name: sonarr
     home: /var/lib/sonarr
     create_home: true
@@ -19,26 +19,26 @@
     state: directory
     owner: sonarr
     group: sonarr
-    mode: 0775
+    mode: "0775"
 
 - name: Ensure sonarr installation directory is present.
   ansible.builtin.file:
-    path: "{{ app_repository_path }}"
+    path: "{{ sonarr_repository_path }}"
     state: directory
     owner: sonarr
     group: sonarr
-    mode: 0755
+    mode: "0755"
 
 - name: Download Sonarr prebuild release.
   ansible.builtin.get_url:
-    url: "https://github.com/Sonarr/Sonarr/releases/download/v{{ app_version }}/Sonarr.main.{{ app_version }}.linux-x64.tar.gz"
+    url: "https://github.com/Sonarr/Sonarr/releases/download/v{{ sonarr_version }}/Sonarr.main.{{ sonarr_version }}.linux-x64.tar.gz"
     dest: /tmp/sonarr.tar.gz
-    mode: 0644
-  
+    mode: '0644'
+
 - name: Extract Sonarr prebuild release.
   ansible.builtin.unarchive:
     src: /tmp/sonarr.tar.gz
-    dest: "{{ app_repository_path }}"
+    dest: "{{ sonarr_repository_path }}"
     owner: sonarr
     group: sonarr
     remote_src: true
@@ -51,10 +51,10 @@
     dest: /etc/systemd/system/sonarr.service
     owner: root
     group: root
-    mode: 0644
-  notify: 
-  - Reload systemd
-  - Restart sonarr
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart sonarr
 
 - name: Ensure sonarr is running and enable on boot.
   ansible.builtin.systemd_service:
