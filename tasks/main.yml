@@ -56,23 +56,12 @@
     - Reload systemd
     - Restart sonarr
 
-- name: Configure sonarr authentication.
-  ansible.builtin.template:
-    src: sonarr.env.j2
-    dest: /etc/default/sonarr
-    owner: root
-    group: root
-    mode: "0600"
-  no_log: true
-  notify:
-    - Restart sonarr
-
 - name: Ensure sonarr is running and enable on boot.
   ansible.builtin.systemd_service:
     name: sonarr
     state: started
     enabled: true
 
-- name: Settings file size for TV series
-  ansible.builtin.include_tasks:
-    file: file_size.yml
+- name: Create initial admin user if needed.
+  ansible.builtin.import_tasks: user.yml
+  when: (sonarr_auth_username | length > 0) and (sonarr_auth_password | length > 0)

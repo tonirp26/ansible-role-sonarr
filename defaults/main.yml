@@ -2,5 +2,5 @@
 sonarr_repository_path: "/opt/Sonarr"
 sonarr_version: "4.0.20.3014"
 systemd_template: sonarr.service.j2
-sonarr_auth_username: ""
-sonarr_auth_password: ""
+sonarr_auth_username: "admin"
+sonarr_auth_password: "password"

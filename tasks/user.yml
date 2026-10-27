@@ -1,0 +1,67 @@
+---
+- name: Wait for Sonarr API to become available
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 8989
+    delay: 5
+    timeout: 60
+
+- name: Read Sonarr config to extract API key
+  ansible.builtin.slurp:
+    src: /var/lib/sonarr/config.xml
+  register: _sonarr_config
+
+- name: Extract API key
+  ansible.builtin.set_fact:
+    sonarr_api_key: "{{ (_sonarr_config.content | b64decode) | regex_findall('<ApiKey>(.*?)</ApiKey>') | first }}"
+
+- name: Create initial admin user if missing
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/user"
+    method: POST
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      username: "{{ sonarr_auth_username }}"
+      password: "{{ sonarr_auth_password }}"
+      isAdmin: true
+    status_code: [201, 400]
+  register: _sonarr_user_create
+  failed_when: false
+  no_log: true
+
+- name: Get current host configuration
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/config/host"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_host_config
+
+- name: Enforce Forms authentication
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/config/host"
+    method: PUT
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: >-
+      {{
+        _sonarr_host_config.json
+        | combine({
+            'authenticationMethod': 'forms',
+            'authenticationRequired': 'enabled',
+            'username': sonarr_auth_username,
+            'password': sonarr_auth_password,
+            'passwordConfirmation': sonarr_auth_password
+          })
+      }}
+    status_code: [200, 202]
+  no_log: true
+  when:
+    - (_sonarr_host_config.json.authenticationMethod | default('none')) != 'forms'
+      or (_sonarr_host_config.json.authenticationRequired | default('disabled')) != 'enabled'
