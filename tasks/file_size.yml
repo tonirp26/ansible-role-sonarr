@@ -1,6 +1,26 @@
 ---
-- name: Get API Key.
-
-- name: Set up quality setings file size.
+- name: Get current quality definitions.
   ansible.builtin.uri:
-    
+    url: "http://localhost:8989/api/v3/qualitydefinition"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_quality_definitions
+
+- name: Configure quality definition sizes.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualitydefinition/{{ item.id }}"
+    method: PUT
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ item | combine(sonarr_quality_sizes[item.quality.name]) }}"
+    status_code: [200, 202]
+  loop: "{{ _sonarr_quality_definitions.json }}"
+  loop_control:
+    label: "{{ item.quality.name }}"
+  when:
+    - item.quality.name in sonarr_quality_sizes
+    - item | combine(sonarr_quality_sizes[item.quality.name]) != item

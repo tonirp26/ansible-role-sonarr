@@ -1,6 +1,70 @@
 ---
+# Variables for installation.
 sonarr_repository_path: "/opt/Sonarr"
 sonarr_version: "4.0.20.3014"
 systemd_template: sonarr.service.j2
+
+# Variables for admin account.
 sonarr_auth_username: "admin"
 sonarr_auth_password: "password"
+
+anime_setup: false
+
+# Variables for quality file sizes.
+sonarr_quality_sizes:
+  HDTV-720p:
+    minSize: 10
+    maxSize: 1000
+    preferredSize: 995
+  HDTV-1080p:
+    minSize: 15
+    maxSize: 1000
+    preferredSize: 995
+  WEBRip-720p:
+    minSize: 10
+    maxSize: 1000
+    preferredSize: 995
+  WEBDL-720p:
+    minSize: 10
+    maxSize: 1000
+    preferredSize: 995
+  Bluray-720p:
+    minSize: 17.1
+    maxSize: 1000
+    preferredSize: 995
+  WEBRip-1080p:
+    minSize: 15
+    maxSize: 1000
+    preferredSize: 995
+  WEBDL-1080p:
+    minSize: 15
+    maxSize: 1000
+    preferredSize: 995
+  Bluray-1080p:
+    minSize: 50.4
+    maxSize: 1000
+    preferredSize: 995
+  Bluray-1080p Remux:
+    minSize: 69.1
+    maxSize: 1000
+    preferredSize: 995
+  HDTV-2160p:
+    minSize: 25
+    maxSize: 1000
+    preferredSize: 995
+  WEBRip-2160p:
+    minSize: 25
+    maxSize: 1000
+    preferredSize: 995
+  WEBDL-2160p:
+    minSize: 25
+    maxSize: 1000
+    preferredSize: 995
+  Bluray-2160p:
+    minSize: 94.6
+    maxSize: 1000
+    preferredSize: 995
+  Bluray-2160p Remux:
+    minSize: 187.4
+    maxSize: 1000
+    preferredSize: 995
