@@ -47,7 +47,7 @@
 
 - name: Copy systemd sonarr configuration template in place.
   ansible.builtin.template:
-    src: "{{ systemd_template }}"
+    src: "{{ sonarr_systemd_template }}"
     dest: /etc/systemd/system/sonarr.service
     owner: root
     group: root
@@ -68,3 +68,6 @@
 
 - name: Configure file size recomended by TRaSH.
   ansible.builtin.import_tasks: file_size.yml
+
+- name: Configure naming scheme (Default TRaSH).
+  ansible.builtin.import_tasks: naming_scheme.yml

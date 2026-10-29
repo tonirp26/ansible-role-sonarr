@@ -2,13 +2,13 @@
 # Variables for installation.
 sonarr_repository_path: "/opt/Sonarr"
 sonarr_version: "4.0.20.3014"
-systemd_template: sonarr.service.j2
+sonarr_systemd_template: sonarr.service.j2
 
 # Variables for admin account.
 sonarr_auth_username: "admin"
 sonarr_auth_password: "password"
 
-anime_setup: false
+sonarr_anime_setup: false
 
 # TRaSH variables for quality file sizes for TV Series.
 sonarr_quality_sizes_tv:
@@ -152,4 +152,17 @@ sonarr_quality_sizes_anime:
     maxSize: 1000
     preferredSize: 995
 
-#
+# Variables for naming scheme, by defoult the ones recomended in TRaSH guides.
+sonarr_naming_scheme:
+  renameEpisodes: true
+  replaceIllegalCharacters: true
+  colonReplacementFormat": 4
+  customColonReplacementFormat": null
+  multiEpisodeStyle": 5
+  standardEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - S{season:00}E{episode:00} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{[MediaInfo VideoDynamicRangeType]}{[Mediainfo VideoCodec]}{-Release Group}"
+  dailyEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - {Air-Date} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{[MediaInfo VideoDynamicRangeType]}{[Mediainfo VideoCodec]}{-Release Group}"
+  animeEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - S{season:00}E{episode:00} - {absolute:000} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{MediaInfo AudioLanguages}{[MediaInfo VideoDynamicRangeType]}[{Mediainfo VideoCodec }{MediaInfo VideoBitDepth}bit]{-Release Group}"
+  seriesFolderFormat: "{Series CleanTitleWithoutYear} {(Series Year)} {tvdb-{TvdbId}}"
+  seasonFolderFormat: "Season {season:00}"
+  specialsFolderFormat: "Specials"
+  # Analyse video files option is enabled by default.

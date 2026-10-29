@@ -1,0 +1,23 @@
+---
+- name: Get current naming scheme.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/config/naming"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_naming_config
+
+- name: Configure naming scheme.
+  vars:
+    _sonarr_naming_desired: "{{ _sonarr_naming_config.json | combine(sonarr_naming_scheme) }}"
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/config/naming/{{ _sonarr_naming_config.json.id }}"
+    method: PUT
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ _sonarr_naming_desired }}"
+    status_code: [200, 202]
+  when: _sonarr_naming_desired != _sonarr_naming_config.json
