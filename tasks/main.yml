@@ -66,6 +66,5 @@
   ansible.builtin.import_tasks: user_config.yml
   when: (sonarr_auth_username | length > 0) and (sonarr_auth_password | length > 0)
 
-- name: Configure file size for TV series from TRaSH.
-  ansible.builtin.import_tasks: files_config.yml
-  when: anime_setup is false
+- name: Configure file size recomended by TRaSH.
+  ansible.builtin.import_tasks: file_size.yml

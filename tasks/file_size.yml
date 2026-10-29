@@ -8,6 +8,12 @@
     status_code: 200
   register: _sonarr_quality_definitions
 
+- name: Set quality size profile.
+  ansible.builtin.set_fact:
+    sonarr_quality_sizes: >-
+      {{ sonarr_quality_sizes_anime if sonarr_anime_setup | bool
+         else sonarr_quality_sizes_tv }}
+
 - name: Configure quality definition sizes.
   ansible.builtin.uri:
     url: "http://localhost:8989/api/v3/qualitydefinition/{{ item.id }}"
