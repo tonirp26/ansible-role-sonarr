@@ -165,4 +165,49 @@ sonarr_naming_scheme:
   seriesFolderFormat: "{Series CleanTitleWithoutYear} {(Series Year)} {tvdb-{TvdbId}}"
   seasonFolderFormat: "Season {season:00}"
   specialsFolderFormat: "Specials"
-  # Analyse video files option is enabled by default.
+
+# TRaSH custom formats to install (files under files/custom_formats/).
+sonarr_custom_formats:
+  - br-disk.json
+  - lq.json
+  - lq(release-title).json
+  - x265(no-hdr-dv).json
+  - extras.json
+  - av1.json
+  - repack-proper.json
+  - repack-2.json
+  - repack-3.json
+  - amzn.json
+  - atvp.json
+  - cc.json
+  - dcu.json
+  - dsnp.json
+  - hmax.json
+  - hbo.json
+  - hulu.json
+  - it.json
+  - max.json
+  - nf.json
+  - pmtp.json
+  - pcok.json
+  - play.json
+  - sho.json
+  - stan.json
+  - syfy.json
+  - hd-streaming-boost.json
+  - web-tier-01.json
+  - web-tier-02.json
+  - web-tier-03.json
+  - web-scene.json
+  - bad-dual-groups.json
+  - no-risgroup.json
+  - obfuscated.json
+  - retags.json
+  - scene.json
+  - sdr(no-webdl).json
+
+# TRaSH media management recomended settings
+# enableMediaInfo is is optinal (true by default) its used to set desired state. Correspond to the Analyse video files option.
+sonarr_media_management:
+  downloadPropersAndRepacks: "doNotPrefer"
+  enableMediaInfo: true 
