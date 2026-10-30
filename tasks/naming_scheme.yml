@@ -21,3 +21,26 @@
     body: "{{ _sonarr_naming_desired }}"
     status_code: [200, 202]
   when: _sonarr_naming_desired != _sonarr_naming_config.json
+
+- name: Get current media management configuration.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/config/mediamanagement"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_media_management_config
+
+- name: Configure media management
+  vars:
+    _sonarr_media_desired: "{{ _sonarr_media_management_config.json | combine(sonarr_media_management) }}"
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/config/mediamanagement/{{ _sonarr_media_management_config.json.id }}"
+    method: PUT
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ _sonarr_media_desired }}"
+    status_code: [200, 202]
+  when: _sonarr_media_desired != _sonarr_media_management_config.json
