@@ -17,7 +17,7 @@
     _sonarr_custom_formats_definitions: >-
       {{
         _sonarr_custom_formats_definitions
-        + [lookup('file', role_path ~ '/files/' ~ item) | from_json]
+        + [lookup('file', role_path ~ '/files/custom_formats/' ~ item) | from_json]
       }}
   loop: "{{ sonarr_custom_formats }}"
   loop_control:

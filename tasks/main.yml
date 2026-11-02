@@ -72,5 +72,8 @@
 - name: Configure naming scheme (Default TRaSH).
   ansible.builtin.import_tasks: naming_scheme.yml
 
-- name: Configure custom formats (TRaSH).
+- name: Configure custom formats (Default TRaSH).
   ansible.builtin.import_tasks: custom_formats.yml
+
+- name: Configure quality profiles (Default TRaSH).
+  ansible.builtin.import_tasks: quality_profile.yml

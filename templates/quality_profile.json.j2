@@ -1,0 +1,115 @@
+{% set schema_items = namespace(map={}) %}
+{% for schema_item in _quality_profile_schema['items'] %}
+{%   if schema_item.quality is defined and schema_item.quality %}
+{%     set schema_name = schema_item.quality.name %}
+{%   else %}
+{%     set schema_name = schema_item.name %}
+{%   endif %}
+{%   set schema_items.map = schema_items.map | combine({schema_name: schema_item}) %}
+{% endfor %}
+
+{% set desired_scores = namespace(map={}) %}
+{% for desired in _quality_profile['formatItems'] | default([]) %}
+{%   set desired_scores.map = desired_scores.map | combine({desired.name: desired.score}) %}
+{% endfor %}
+
+{# Build the list in display order: desired qualities in file order, then the
+   remaining schema qualities as disabled. It is reversed before output because
+   Sonarr's UI renders the API items list from last to first. #}
+{% set ordered_items = namespace(list=[]) %}
+{% set used_items = namespace(map={}) %}
+{% for desired in _quality_profile['items'] | default([]) %}
+{%   set schema_item = schema_items.map.get(desired.name) %}
+{%   if schema_item is not none %}
+{%     set ordered_items.list = ordered_items.list + [{'schema': schema_item, 'desired': desired}] %}
+{%     set used_items.map = used_items.map | combine({desired.name: true}) %}
+{%   endif %}
+{% endfor %}
+{% for schema_item in _quality_profile_schema['items'] %}
+{%   if schema_item.quality is defined and schema_item.quality %}
+{%     set schema_name = schema_item.quality.name %}
+{%   else %}
+{%     set schema_name = schema_item.name %}
+{%   endif %}
+{%   if not used_items.map.get(schema_name, false) %}
+{%     set ordered_items.list = ordered_items.list + [{'schema': schema_item, 'desired': {}}] %}
+{%   endif %}
+{% endfor %}
+
+{% set profile_items = namespace(list=[]) %}
+{% for entry in ordered_items.list %}
+{%   set schema_item = entry.schema %}
+{%   set desired = entry.desired %}
+{%   set item_allowed = desired.get('allowed', schema_item.allowed | default(false)) %}
+{%   if schema_item.quality is defined and schema_item.quality %}
+{%     set out_item = {
+         'quality': schema_item.quality,
+         'items': [],
+         'allowed': item_allowed
+       } %}
+{%   else %}
+{%     set desired_nested = desired.get('items', none) %}
+{%     set nested_items = namespace(list=[]) %}
+{%     for nested in schema_item['items'] %}
+{%       set nested_allowed = (nested.quality.name in desired_nested and item_allowed) if desired_nested is not none else item_allowed %}
+{%       set nested_items.list = nested_items.list + [{
+             'quality': nested.quality,
+             'items': [],
+             'allowed': nested_allowed
+           }] %}
+{%     endfor %}
+{%     set out_item = {
+         'id': schema_item.id,
+         'name': schema_item.name,
+         'items': nested_items.list,
+         'allowed': item_allowed
+       } %}
+{%   endif %}
+{%   set profile_items.list = profile_items.list + [out_item] %}
+{% endfor %}
+
+{% set cutoff_value = _quality_profile.cutoff %}
+{% if cutoff_value is string %}
+{%   set cutoff_match = namespace(id=0) %}
+{%   for schema_item in _quality_profile_schema['items'] %}
+{%     if schema_item.quality is defined and schema_item.quality %}
+{%       if schema_item.quality.name == cutoff_value %}
+{%         set cutoff_match.id = schema_item.quality.id %}
+{%       endif %}
+{%     else %}
+{%       if schema_item.name == cutoff_value %}
+{%         set cutoff_match.id = schema_item.id %}
+{%       endif %}
+{%       for nested in schema_item['items'] %}
+{%         if nested.quality.name == cutoff_value %}
+{%           set cutoff_match.id = nested.quality.id %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{%   set cutoff_value = cutoff_match.id %}
+{% endif %}
+
+{% set profile_format_items = namespace(list=[]) %}
+{% for schema_format in _quality_profile_schema['formatItems'] %}
+{%   set profile_format_items.list = profile_format_items.list + [{
+       'format': schema_format.format,
+       'name': schema_format.name,
+       'score': desired_scores.map.get(schema_format.name, schema_format.score | default(0))
+     }] %}
+{% endfor %}
+
+{% set final_items = profile_items.list | reverse | list %}
+
+{{
+  {
+    'name': _quality_profile.name,
+    'upgradeAllowed': _quality_profile.upgradeAllowed | default(true),
+    'cutoff': cutoff_value | int,
+    'minFormatScore': _quality_profile.minFormatScore | default(0),
+    'cutoffFormatScore': _quality_profile.cutoffFormatScore | default(0),
+    'minUpgradeFormatScore': _quality_profile.minUpgradeFormatScore | default(1),
+    'items': final_items,
+    'formatItems': profile_format_items.list
+  } | to_json
+}}

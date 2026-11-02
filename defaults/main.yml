@@ -210,4 +210,21 @@ sonarr_custom_formats:
 # enableMediaInfo is is optinal (true by default) its used to set desired state. Correspond to the Analyse video files option.
 sonarr_media_management:
   downloadPropersAndRepacks: "doNotPrefer"
-  enableMediaInfo: true 
+  enableMediaInfo: true
+
+# TRaSH quality profiles to install (files under files/quality_profiles/).
+# Profiles reference qualities and custom formats by name; IDs are resolved
+# from Sonarr before the profile is created.
+sonarr_quality_profiles:
+  - web-1080p.json
+
+# Quality profiles created by Sonarr on a fresh install. Only these profiles are
+# deleted; profiles created manually with any other name are preserved.
+# A managed quality profile name must not be one of these default names.
+sonarr_default_quality_profiles:
+  - Any
+  - SD
+  - HD-720p
+  - HD-1080p
+  - Ultra-HD
+  - HD - 720p/1080p

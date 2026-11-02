@@ -1,0 +1,106 @@
+---
+- name: Get current quality profiles.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualityprofile"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_quality_profiles
+
+- name: Ensure Sonarr default quality profiles are not present.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualityprofile/{{ item.id }}"
+    method: DELETE
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: [200, 202, 204]
+  loop: "{{ _sonarr_quality_profiles.json }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.name in sonarr_default_quality_profiles
+
+- name: Get current quality profiles after deleting defaults.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualityprofile"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_quality_profiles_current
+
+- name: Initialize quality profile list.
+  ansible.builtin.set_fact:
+    _sonarr_quality_profiles_list: []
+    _sonarr_quality_profiles_payloads: []
+
+- name: Load quality profiles.
+  ansible.builtin.set_fact:
+    _sonarr_quality_profiles_list: >-
+      {{
+        _sonarr_quality_profiles_list
+        + [lookup('file', role_path ~ '/files/quality_profiles/' ~ item) | from_json]
+      }}
+  loop: "{{ sonarr_quality_profiles }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Get quality profile schema.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualityprofile/schema"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_quality_profile_schema
+
+- name: Build quality profile payloads.
+  ansible.builtin.set_fact:
+    _sonarr_quality_profiles_payloads: >-
+      {{
+        _sonarr_quality_profiles_payloads
+        + [lookup('ansible.builtin.template', role_path ~ '/templates/quality_profile.json.j2') | from_json]
+      }}
+  vars:
+    _quality_profile: "{{ item }}"
+    _quality_profile_schema: "{{ _sonarr_quality_profile_schema.json }}"
+  loop: "{{ _sonarr_quality_profiles_list }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Update existing quality profiles.
+  vars:
+    _existing_matches: "{{ _sonarr_quality_profiles_current.json | selectattr('name', 'equalto', item.name) | list }}"
+    _existing: "{{ _existing_matches[0] if _existing_matches | length > 0 else {} }}"
+    _desired: "{{ item | combine({'id': _existing['id']}) if _existing else item }}"
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualityprofile/{{ _existing['id'] | default(0) }}"
+    method: PUT
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ _desired }}"
+    status_code: [200, 202]
+  loop: "{{ _sonarr_quality_profiles_payloads }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - _existing | length > 0
+    - _desired != _existing
+
+- name: Add missing quality profile.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/qualityprofile/"
+    method: POST
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ item }}"
+    status_code: [200, 201, 202]
+  loop: "{{ _sonarr_quality_profiles_payloads }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.name not in _sonarr_quality_profiles_current.json | map(attribute='name') | list
