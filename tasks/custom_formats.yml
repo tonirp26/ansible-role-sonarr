@@ -12,6 +12,12 @@
   ansible.builtin.set_fact:
     _sonarr_custom_formats_definitions: []
 
+- name: Set quality size profile.
+  ansible.builtin.set_fact:
+    sonarr_custom_formats: >-
+      {{ sonarr_anime_custom_formats if sonarr_anime_setup | bool
+         else sonarr_tv_custom_formats }}
+
 - name: Load TRaSH custom format definitions.
   ansible.builtin.set_fact:
     _sonarr_custom_formats_definitions: >-

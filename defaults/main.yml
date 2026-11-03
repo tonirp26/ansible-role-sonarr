@@ -162,12 +162,12 @@ sonarr_naming_scheme:
   standardEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - S{season:00}E{episode:00} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{[MediaInfo VideoDynamicRangeType]}{[Mediainfo VideoCodec]}{-Release Group}"
   dailyEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - {Air-Date} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{[MediaInfo VideoDynamicRangeType]}{[Mediainfo VideoCodec]}{-Release Group}"
   animeEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - S{season:00}E{episode:00} - {absolute:000} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{MediaInfo AudioLanguages}{[MediaInfo VideoDynamicRangeType]}[{Mediainfo VideoCodec }{MediaInfo VideoBitDepth}bit]{-Release Group}"
-  seriesFolderFormat: "{Series CleanTitleWithoutYear} {(Series Year)} {tvdb-{TvdbId}}"
+  seriesFolderFormat: "{Series CleanTitleWithoutYear} {(Series Year)}"
   seasonFolderFormat: "Season {season:00}"
   specialsFolderFormat: "Specials"
 
 # TRaSH custom formats to install (files under files/custom_formats/).
-sonarr_custom_formats:
+sonarr_tv_custom_formats:
   - br-disk.json
   - lq.json
   - lq(release-title).json
@@ -206,17 +206,56 @@ sonarr_custom_formats:
   - scene.json
   - sdr(no-webdl).json
 
+sonarr_anime_custom_formats:
+  - anime-bd-tier-01.json
+  - anime-bd-tier-02.json
+  - anime-bd-tier-03.json
+  - anime-bd-tier-04.json
+  - anime-bd-tier-05.json
+  - anime-bd-tier-06.json
+  - anime-bd-tier-07.json
+  - anime-bd-tier-08.json
+  - anime-web-tier-01.json
+  - anime-web-tier-02.json
+  - anime-web-tier-03.json
+  - remux-tier-01.json
+  - remux-tier-02.json
+  - anime-web-tier-04.json
+  - anime-web-tier-05.json
+  - anime-web-tier-06.json
+  - anime-raws.json
+  - anime-lq-groups.json
+  - av1.json
+  - uncensored.json
+  - v0.json
+  - v1.json
+  - v2.json
+  - v3.json
+  - v4.json
+  - 10bit.json
+  - anime-dual-audio.json
+  - dubs-only.json
+  - vostfr.json
+  - cr.json
+  - dsnp.json
+  - nf.json
+  - amzn.json
+  - vrv.json
+  - funi.json
+  - abema.json
+  - adn.json
+  - b-global.json
+  - bilibili.json
+  - hidive.json
+  - web-tier-01.json
+  - web-tier-02.json
+  - web-tier-03.json
+
 # TRaSH media management recomended settings
 # enableMediaInfo is is optinal (true by default) its used to set desired state. Correspond to the Analyse video files option.
 sonarr_media_management:
   downloadPropersAndRepacks: "doNotPrefer"
   enableMediaInfo: true
-
-# TRaSH quality profiles to install (files under files/quality_profiles/).
-# Profiles reference qualities and custom formats by name; IDs are resolved
-# from Sonarr before the profile is created.
-sonarr_quality_profiles:
-  - web-1080p.json
 
 # Quality profiles created by Sonarr on a fresh install. Only these profiles are
 # deleted; profiles created manually with any other name are preserved.
@@ -228,3 +267,12 @@ sonarr_default_quality_profiles:
   - HD-1080p
   - Ultra-HD
   - HD - 720p/1080p
+
+# TRaSH quality profiles to install (files under files/quality_profiles/).
+# Profiles reference qualities and custom formats by name; IDs are resolved
+# from Sonarr before the profile is created.
+sonarr_quality_profiles_tv:
+  - web-1080p.json
+
+sonarr_quality_profiles_anime:
+  - "[anime]remux-1080p.json"
