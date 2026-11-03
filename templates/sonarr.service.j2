@@ -5,6 +5,7 @@ After=syslog.target network.target
 [Service]
 Type=simple
 User=sonarr
+EnvironmentFile=-/etc/default/sonarr
 ExecStart=/opt/Sonarr/Sonarr -nobrowser -data=/var/lib/sonarr/
 TimeoutStopSec=20
 KillMode=process

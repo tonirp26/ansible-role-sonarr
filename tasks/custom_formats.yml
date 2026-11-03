@@ -1,0 +1,79 @@
+---
+- name: Get current custom formats.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/customformat"
+    method: GET
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+    status_code: 200
+  register: _sonarr_custom_formats
+
+- name: Initialize custom format definition list.
+  ansible.builtin.set_fact:
+    _sonarr_custom_formats_definitions: []
+
+- name: Validate language used by the TV-only custom format.
+  ansible.builtin.assert:
+    that:
+      - sonarr_language_only | string is match('^-?[0-9]+$')
+      - sonarr_language_only | int >= -2
+      - sonarr_language_only | int <= 53
+      - sonarr_language_only | int != -1
+    fail_msg: >-
+      sonarr_language_only must be a valid Sonarr language ID (integer).
+      See the README for the id/language table.
+  when: not (sonarr_anime_setup | bool)
+
+- name: Set quality size profile.
+  ansible.builtin.set_fact:
+    sonarr_custom_formats: >-
+      {{ sonarr_anime_custom_formats if sonarr_anime_setup | bool
+         else sonarr_tv_custom_formats }}
+
+- name: Load TRaSH custom format definitions.
+  ansible.builtin.set_fact:
+    _sonarr_custom_formats_definitions: >-
+      {{
+        _sonarr_custom_formats_definitions
+        + [lookup('ansible.builtin.template', role_path ~ '/files/custom_formats/' ~ item) | from_json]
+      }}
+  loop: "{{ sonarr_custom_formats }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Convert TRaSH fields to Sonarr custom format fields.
+  ansible.builtin.set_fact:
+    _sonarr_custom_formats_specs: >-
+      {{
+        _sonarr_custom_formats_specs | default({})
+        | combine({
+            item.0.name: (
+              (_sonarr_custom_formats_specs | default({}))[item.0.name] | default([])
+            ) + [
+              item.1 | combine({
+                'fields': item.1.fields | dict2items(key_name='name', value_name='value')
+              })
+            ]
+          })
+      }}
+  loop: "{{ _sonarr_custom_formats_definitions | subelements('specifications') }}"
+  loop_control:
+    label: "{{ item.0.name }} / {{ item.1.name }}"
+
+- name: Add missing TRaSH custom formats.
+  ansible.builtin.uri:
+    url: "http://localhost:8989/api/v3/customformat"
+    method: POST
+    headers:
+      X-Api-Key: "{{ sonarr_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ item.name }}"
+      includeCustomFormatWhenRenaming: "{{ item.includeCustomFormatWhenRenaming | default(false) }}"
+      specifications: "{{ _sonarr_custom_formats_specs[item.name] }}"
+    status_code: [200, 201, 202]
+  loop: "{{ _sonarr_custom_formats_definitions }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.name not in _sonarr_custom_formats.json | map(attribute='name') | list

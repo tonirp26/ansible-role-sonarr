@@ -1,0 +1,21 @@
+{
+  "trash_id": "0dc8aec3bd1c47cd6c40c46ecd27e846",
+  "trash_scores": {
+    "default": -10000
+  },
+  "trash_description": "Language: X Only: Because it uses reverse scoring, and if you use the default scores, it will assign all releases without the configured audio language a score of -10000.",
+
+  "name": "Language: Not X",
+  "includeCustomFormatWhenRenaming": false,
+  "specifications": [
+    {
+      "name": "Not X Language",
+      "implementation": "LanguageSpecification",
+      "negate": true,
+      "required": false,
+      "fields": {
+        "value": {{ sonarr_language_only }}
+      }
+    }
+  ]
+}

@@ -5,6 +5,9 @@
   vars:
     nodejs_install_npm_user: root
     nodejs_version: "22.x"
+    sonarr_auth_username: "admin"
+    sonarr_auth_password: "password"
+
 
   pre_tasks:
     - name: Update apt cache.

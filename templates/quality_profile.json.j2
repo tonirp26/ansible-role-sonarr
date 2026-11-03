@@ -1,0 +1,153 @@
+{% set schema_qualities = namespace(map={}) %}
+{% set schema_groups = namespace(map={}) %}
+{% set schema_items = namespace(map={}) %}
+{% set schema_group_ids = namespace(list=[]) %}
+{% for schema_item in _quality_profile_schema['items'] %}
+{%   if schema_item.quality is defined and schema_item.quality %}
+{%     set schema_name = schema_item.quality.name %}
+{%     set schema_qualities.map = schema_qualities.map | combine({schema_name: schema_item.quality}) %}
+{%   else %}
+{%     set schema_name = schema_item.name %}
+{%     set schema_groups.map = schema_groups.map | combine({schema_name: schema_item}) %}
+{%     set schema_group_ids.list = schema_group_ids.list + [schema_item.id | default(0)] %}
+{%     for nested in schema_item['items'] %}
+{%       set schema_qualities.map = schema_qualities.map | combine({nested.quality.name: nested.quality}) %}
+{%     endfor %}
+{%   endif %}
+{%   set schema_items.map = schema_items.map | combine({schema_name: schema_item}) %}
+{% endfor %}
+{% set next_group_id = namespace(value=((schema_group_ids.list | max) if schema_group_ids.list | length > 0 else 1000) + 1) %}
+
+{% set desired_scores = namespace(map={}) %}
+{% for desired in _quality_profile['formatItems'] | default([]) %}
+{%   set desired_scores.map = desired_scores.map | combine({desired.name: desired.score}) %}
+{% endfor %}
+
+{# Build the list in display order: desired qualities in file order, then the
+   remaining schema qualities as disabled. It is reversed before output because
+   Sonarr's UI renders the API items list from last to first. Groups are built
+   from the profile definition so their membership can differ from the schema. #}
+{% set profile_items = namespace(list=[]) %}
+{% set used_qualities = namespace(map={}) %}
+{% set output_ids = namespace(map={}) %}
+{% for desired in _quality_profile['items'] | default([]) %}
+{%   set desired_name = desired.name %}
+{%   set schema_item = schema_items.map.get(desired_name) %}
+{%   set item_allowed = desired.get('allowed', schema_item.allowed | default(false) if schema_item is not none else false) %}
+{%   set desired_nested = desired.get('items', none) %}
+{%   if desired_nested is not none and desired_nested | length > 0 %}
+{%     set group_items = namespace(list=[]) %}
+{%     for quality_name in desired_nested %}
+{%       set quality = schema_qualities.map.get(quality_name) %}
+{%       if quality is not none and not used_qualities.map.get(quality_name, false) %}
+{%         set group_items.list = group_items.list + [{'quality': quality, 'items': [], 'allowed': item_allowed}] %}
+{%         set used_qualities.map = used_qualities.map | combine({quality_name: true}) %}
+{%       endif %}
+{%     endfor %}
+{%     if group_items.list | length > 1 %}
+{%       set existing_group = schema_groups.map.get(desired_name) %}
+{%       if existing_group is not none %}
+{%         set group_id = existing_group.id %}
+{%       else %}
+{%         set group_id = next_group_id.value %}
+{%         set next_group_id.value = next_group_id.value + 1 %}
+{%       endif %}
+{%       for group_item in group_items.list %}
+{%         set output_ids.map = output_ids.map | combine({group_item.quality.name: group_id}) %}
+{%       endfor %}
+{%       set output_ids.map = output_ids.map | combine({desired_name: group_id}) %}
+{%       set profile_items.list = profile_items.list + [{'id': group_id, 'name': desired_name, 'items': group_items.list, 'allowed': item_allowed}] %}
+{%     elif group_items.list | length == 1 %}
+{%       set only_item = group_items.list[0] %}
+{%       set output_ids.map = output_ids.map | combine({only_item.quality.name: only_item.quality.id}) %}
+{%       set profile_items.list = profile_items.list + [{'quality': only_item.quality, 'items': [], 'allowed': item_allowed}] %}
+{%     endif %}
+{%   elif schema_item is not none %}
+{%     if schema_item.quality is defined and schema_item.quality %}
+{%       if not used_qualities.map.get(schema_item.quality.name, false) %}
+{%         set used_qualities.map = used_qualities.map | combine({schema_item.quality.name: true}) %}
+{%         set output_ids.map = output_ids.map | combine({desired_name: schema_item.quality.id}) %}
+{%         set profile_items.list = profile_items.list + [{'quality': schema_item.quality, 'items': [], 'allowed': item_allowed}] %}
+{%       endif %}
+{%     else %}
+{%       set group_items = namespace(list=[]) %}
+{%       for nested in schema_item['items'] %}
+{%         if not used_qualities.map.get(nested.quality.name, false) %}
+{%           set group_items.list = group_items.list + [{'quality': nested.quality, 'items': [], 'allowed': item_allowed}] %}
+{%           set used_qualities.map = used_qualities.map | combine({nested.quality.name: true}) %}
+{%         endif %}
+{%       endfor %}
+{%       if group_items.list | length > 1 %}
+{%         for group_item in group_items.list %}
+{%           set output_ids.map = output_ids.map | combine({group_item.quality.name: schema_item.id}) %}
+{%         endfor %}
+{%         set output_ids.map = output_ids.map | combine({desired_name: schema_item.id}) %}
+{%         set profile_items.list = profile_items.list + [{'id': schema_item.id, 'name': schema_item.name, 'items': group_items.list, 'allowed': item_allowed}] %}
+{%       elif group_items.list | length == 1 %}
+{%         set only_item = group_items.list[0] %}
+{%         set output_ids.map = output_ids.map | combine({only_item.quality.name: only_item.quality.id}) %}
+{%         set profile_items.list = profile_items.list + [{'quality': only_item.quality, 'items': [], 'allowed': item_allowed}] %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+
+{% for schema_item in _quality_profile_schema['items'] %}
+{%   if schema_item.quality is defined and schema_item.quality %}
+{%     if not used_qualities.map.get(schema_item.quality.name, false) %}
+{%       set profile_items.list = profile_items.list + [{'quality': schema_item.quality, 'items': [], 'allowed': false}] %}
+{%       set used_qualities.map = used_qualities.map | combine({schema_item.quality.name: true}) %}
+{%     endif %}
+{%   else %}
+{%     set remaining_items = namespace(list=[]) %}
+{%     for nested in schema_item['items'] %}
+{%       if not used_qualities.map.get(nested.quality.name, false) %}
+{%         set remaining_items.list = remaining_items.list + [{'quality': nested.quality, 'items': [], 'allowed': false}] %}
+{%         set used_qualities.map = used_qualities.map | combine({nested.quality.name: true}) %}
+{%       endif %}
+{%     endfor %}
+{%     if remaining_items.list | length > 1 %}
+{%       set profile_items.list = profile_items.list + [{'id': schema_item.id, 'name': schema_item.name, 'items': remaining_items.list, 'allowed': false}] %}
+{%     elif remaining_items.list | length == 1 %}
+{%       set profile_items.list = profile_items.list + [{'quality': remaining_items.list[0].quality, 'items': [], 'allowed': false}] %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+
+{% set cutoff_value = _quality_profile.cutoff %}
+{% if cutoff_value is string %}
+{%   set cutoff_match = namespace(id=0) %}
+{%   if output_ids.map.get(cutoff_value) is not none %}
+{%     set cutoff_match.id = output_ids.map.get(cutoff_value) %}
+{%   else %}
+{%     set cutoff_quality = schema_qualities.map.get(cutoff_value) %}
+{%     if cutoff_quality is not none %}
+{%       set cutoff_match.id = cutoff_quality.id %}
+{%     endif %}
+{%   endif %}
+{%   set cutoff_value = cutoff_match.id %}
+{% endif %}
+
+{% set profile_format_items = namespace(list=[]) %}
+{% for schema_format in _quality_profile_schema['formatItems'] %}
+{%   set profile_format_items.list = profile_format_items.list + [{
+       'format': schema_format.format,
+       'name': schema_format.name,
+       'score': desired_scores.map.get(schema_format.name, schema_format.score | default(0))
+     }] %}
+{% endfor %}
+
+{% set final_items = profile_items.list | reverse | list %}
+
+{{
+  {
+    'name': _quality_profile.name,
+    'upgradeAllowed': _quality_profile.upgradeAllowed | default(true),
+    'cutoff': cutoff_value | int,
+    'minFormatScore': _quality_profile.minFormatScore | default(0),
+    'cutoffFormatScore': _quality_profile.cutoffFormatScore | default(0),
+    'minUpgradeFormatScore': _quality_profile.minUpgradeFormatScore | default(1),
+    'items': final_items,
+    'formatItems': profile_format_items.list
+  } | to_json
+}}
