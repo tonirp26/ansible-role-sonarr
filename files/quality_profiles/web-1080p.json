@@ -177,6 +177,11 @@
     {
       "name": "Scene",
       "score": -10000
+    },
+    {
+      "name": "Language: Not X",
+      "score": -10000
     }
+
   ]
 }

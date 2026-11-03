@@ -12,6 +12,18 @@
   ansible.builtin.set_fact:
     _sonarr_custom_formats_definitions: []
 
+- name: Validate language used by the TV-only custom format.
+  ansible.builtin.assert:
+    that:
+      - sonarr_language_only | string is match('^-?[0-9]+$')
+      - sonarr_language_only | int >= -2
+      - sonarr_language_only | int <= 53
+      - sonarr_language_only | int != -1
+    fail_msg: >-
+      sonarr_language_only must be a valid Sonarr language ID (integer).
+      See the README for the id/language table.
+  when: not (sonarr_anime_setup | bool)
+
 - name: Set quality size profile.
   ansible.builtin.set_fact:
     sonarr_custom_formats: >-
@@ -23,7 +35,7 @@
     _sonarr_custom_formats_definitions: >-
       {{
         _sonarr_custom_formats_definitions
-        + [lookup('file', role_path ~ '/files/custom_formats/' ~ item) | from_json]
+        + [lookup('ansible.builtin.template', role_path ~ '/files/custom_formats/' ~ item) | from_json]
       }}
   loop: "{{ sonarr_custom_formats }}"
   loop_control:

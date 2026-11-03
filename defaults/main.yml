@@ -205,6 +205,7 @@ sonarr_tv_custom_formats:
   - retags.json
   - scene.json
   - sdr(no-webdl).json
+  - language-x-only.json
 
 sonarr_anime_custom_formats:
   - anime-bd-tier-01.json
@@ -273,6 +274,10 @@ sonarr_default_quality_profiles:
 # from Sonarr before the profile is created.
 sonarr_quality_profiles_tv:
   - web-1080p.json
+
+# Sonarr language ID used by the TV-only "Language: Not X" custom format.
+# See the README for the id/language table.
+sonarr_language_only: 1
 
 sonarr_quality_profiles_anime:
   - "[anime]remux-1080p.json"
