@@ -1,5 +1,5 @@
 ---
-- name: Ensure required sonarr depencerys are present.
+- name: Ensure required sonarr dependencies are present.
   ansible.builtin.apt:
     name:
       - sqlite3

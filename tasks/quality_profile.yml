@@ -35,6 +35,12 @@
     _sonarr_quality_profiles_list: []
     _sonarr_quality_profiles_payloads: []
 
+- name: Set quality profiles.
+  ansible.builtin.set_fact:
+    sonarr_quality_profiles: >-
+      {{ sonarr_quality_profiles_anime if sonarr_anime_setup | bool
+         else sonarr_quality_profiles_tv }}
+
 - name: Load quality profiles.
   ansible.builtin.set_fact:
     _sonarr_quality_profiles_list: >-
