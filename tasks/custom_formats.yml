@@ -24,7 +24,7 @@
       See the README for the id/language table.
   when: not (sonarr_anime_setup | bool)
 
-- name: Set quality size profile.
+- name: Set custom format list.
   ansible.builtin.set_fact:
     sonarr_custom_formats: >-
       {{ sonarr_anime_custom_formats if sonarr_anime_setup | bool

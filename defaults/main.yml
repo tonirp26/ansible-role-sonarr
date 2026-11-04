@@ -1,16 +1,17 @@
 ---
-# Variables for installation.
+# Variables for Sonarr installation.
 sonarr_repository_path: "/opt/Sonarr"
 sonarr_version: "4.0.20.3014"
 sonarr_systemd_template: sonarr.service.j2
 
-# Variables for admin account.
+# Variables for setting up the admin account.
 sonarr_auth_username: "admin"
 sonarr_auth_password: "password"
 
+# Variable to configure the Sonarr profile for TV series or anime.
 sonarr_anime_setup: false
 
-# TRaSH variables for quality file sizes for TV Series.
+# TRaSH variables to set quality file sizes for TV Series.
 sonarr_quality_sizes_tv:
   HDTV-720p:
     minSize: 10
@@ -69,7 +70,7 @@ sonarr_quality_sizes_tv:
     maxSize: 1000
     preferredSize: 995
 
-# TRaSH variables for quality file sizes.
+# TRaSH variables to set quality file sizes for Anime.
 sonarr_quality_sizes_anime:
   SDTV:
     minSize: 5
@@ -152,13 +153,13 @@ sonarr_quality_sizes_anime:
     maxSize: 1000
     preferredSize: 995
 
-# Variables for naming scheme, by defoult the ones recomended in TRaSH guides.
+# Variables for naming scheme, by default the ones recommended in the TRaSH guides.
 sonarr_naming_scheme:
   renameEpisodes: true
   replaceIllegalCharacters: true
-  colonReplacementFormat": 4
-  customColonReplacementFormat": null
-  multiEpisodeStyle": 5
+  colonReplacementFormat: 4
+  customColonReplacementFormat: null
+  multiEpisodeStyle: 5
   standardEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - S{season:00}E{episode:00} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{[MediaInfo VideoDynamicRangeType]}{[Mediainfo VideoCodec]}{-Release Group}"
   dailyEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - {Air-Date} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{[MediaInfo VideoDynamicRangeType]}{[Mediainfo VideoCodec]}{-Release Group}"
   animeEpisodeFormat: "{Series CleanTitleWithoutYear} {(Series Year)} - S{season:00}E{episode:00} - {absolute:000} - {Episode CleanTitle:90} {[Custom Formats]}{[Quality Full]}{[Mediainfo AudioCodec}{ Mediainfo AudioChannels]}{MediaInfo AudioLanguages}{[MediaInfo VideoDynamicRangeType]}[{Mediainfo VideoCodec }{MediaInfo VideoBitDepth}bit]{-Release Group}"
@@ -252,8 +253,9 @@ sonarr_anime_custom_formats:
   - web-tier-02.json
   - web-tier-03.json
 
-# TRaSH media management recomended settings
-# enableMediaInfo is is optinal (true by default) its used to set desired state. Correspond to the Analyse video files option.
+# TRaSH media management recommended settings
+# enableMediaInfo is optional (true by default); it is used to set the desired state.
+# It corresponds to the Analyze video files option.
 sonarr_media_management:
   downloadPropersAndRepacks: "doNotPrefer"
   enableMediaInfo: true

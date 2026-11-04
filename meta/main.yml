@@ -4,7 +4,7 @@ dependencies: []
 galaxy_info:
   role_name: "sonarr"
   author: tonirp26
-  description: Sonarr instalation for Linux.
+  description: Sonarr installation for Linux.
   company: none.
   license: ""
   min_ansible_version: "2.10"
