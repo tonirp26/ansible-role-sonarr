@@ -1,12 +1,12 @@
 ---
-- name: Ensure required sonarr dependencies are present.
+- name: Ensure required Sonarr dependencies are present.
   ansible.builtin.apt:
     name:
       - sqlite3
       - libicu-dev
     state: present
 
-- name: Create sonarr system user.
+- name: Create Sonarr system user.
   ansible.builtin.user:
     name: sonarr
     home: /var/lib/sonarr
@@ -21,7 +21,7 @@
     group: sonarr
     mode: "0775"
 
-- name: Ensure sonarr installation directory is present.
+- name: Ensure Sonarr installation directory is present.
   ansible.builtin.file:
     path: "{{ sonarr_repository_path }}"
     state: directory
@@ -29,13 +29,13 @@
     group: sonarr
     mode: "0755"
 
-- name: Download Sonarr prebuild release.
+- name: Download Sonarr prebuilt release.
   ansible.builtin.get_url:
     url: "https://github.com/Sonarr/Sonarr/releases/download/v{{ sonarr_version }}/Sonarr.main.{{ sonarr_version }}.linux-x64.tar.gz"
     dest: /tmp/sonarr.tar.gz
     mode: '0644'
 
-- name: Extract Sonarr prebuild release.
+- name: Extract Sonarr prebuilt release.
   ansible.builtin.unarchive:
     src: /tmp/sonarr.tar.gz
     dest: "{{ sonarr_repository_path }}"
@@ -45,7 +45,7 @@
     extra_opts:
       - --strip-components=1
 
-- name: Copy systemd sonarr configuration template in place.
+- name: Copy the systemd Sonarr configuration template in place.
   ansible.builtin.template:
     src: "{{ sonarr_systemd_template }}"
     dest: /etc/systemd/system/sonarr.service
@@ -54,9 +54,9 @@
     mode: '0644'
   notify:
     - Reload systemd
-    - Restart sonarr
+    - Restart Sonarr
 
-- name: Ensure sonarr is running and enable on boot.
+- name: Ensure Sonarr is running and enabled on boot.
   ansible.builtin.systemd_service:
     name: sonarr
     state: started
@@ -66,7 +66,7 @@
   ansible.builtin.import_tasks: user_config.yml
   when: (sonarr_auth_username | length > 0) and (sonarr_auth_password | length > 0)
 
-- name: Configure file size recomended by TRaSH.
+- name: Configure file sizes recommended by TRaSH.
   ansible.builtin.import_tasks: file_size.yml
 
 - name: Configure naming scheme (Default TRaSH).
